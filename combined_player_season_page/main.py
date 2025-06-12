@@ -10,12 +10,12 @@ import streamlit as st
 
 
 # Load and clean the primary data (Per 100 Poss)
-df_main = pd.read_csv("../data/Per 100 Poss.csv")
+df_main = pd.read_csv("data/Per 100 Poss.csv")
 df_main = df_main[df_main['season'] >= 1997].copy()
 df_main.drop(columns=['birth_year'], inplace=True, errors='ignore')
 
 # Load and clean Player Shooting data
-df_shooting = pd.read_csv("../data/Player Shooting.csv")
+df_shooting = pd.read_csv("data/Player Shooting.csv")
 df_shooting.drop(columns=['season', 'player_id', 'player', 'pos', 'age', 'experience', 'lg', 'tm', 'fg_percent', 'birth_year'], errors='ignore', inplace=True)
 df_shooting.fillna(0, inplace=True)
 
@@ -131,10 +131,10 @@ def find_similar_players(player_name, season, top_n=10):
 
 __all__ = ['df', 'find_similar_players']
 
-def load_shooting_data(file_path="../data/Player Shooting.csv"):
+def load_shooting_data(file_path="data/Player Shooting.csv"):
     return pd.read_csv(file_path)
 
-def load_league_averages(file_path="../data/League Average Shooting.csv"):
+def load_league_averages(file_path="data/League Average Shooting.csv"):
     return pd.read_csv(file_path).set_index("Season")
 
 @st.cache_data
