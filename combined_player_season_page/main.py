@@ -139,17 +139,17 @@ def load_league_averages(file_path="data/League Average Shooting.csv"):
 
 @st.cache_data
 def load_basic_stats():
-    per_game = pd.read_csv("../data/Player Per Game.csv")
-    per_100 = pd.read_csv("../data/Per 100 Poss.csv")
-    totals = pd.read_csv("../data/Player Totals.csv")
+    per_game = pd.read_csv("data/Player Per Game.csv")
+    per_100 = pd.read_csv("data/Per 100 Poss.csv")
+    totals = pd.read_csv("data/Player Totals.csv")
     return per_game, per_100, totals
 
 @st.cache_data
 def load_award_data():
-    all_star = pd.read_csv("../data/All-Star Selections.csv")
-    eos_teams = pd.read_csv("../data/End of Season Teams.csv")
-    award_shares = pd.read_csv("../data/Player Award Shares.csv")
-    career_info = pd.read_csv("../data/Player Career Info.csv")
+    all_star = pd.read_csv("data/All-Star Selections.csv")
+    eos_teams = pd.read_csv("data/End of Season Teams.csv")
+    award_shares = pd.read_csv("data/Player Award Shares.csv")
+    career_info = pd.read_csv("data/Player Career Info.csv")
     return all_star, eos_teams, award_shares, career_info
 
 def get_player_shot_profile(df, player_name, season, league_avg_df):
