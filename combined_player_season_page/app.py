@@ -187,5 +187,5 @@ if triggered or (
         else:
             st.dataframe(sim_result)
 else:
-    st.info("Select a player and season, then click 'Generate Profile'.")
+    st.info("Click the arrow in the top left. Select a player and season, then click 'Generate Profile'.")
 
