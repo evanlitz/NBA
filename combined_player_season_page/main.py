@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import streamlit as st
+
 
 
 # Load and clean the primary data (Per 100 Poss)
@@ -135,6 +137,21 @@ def load_shooting_data(file_path="../data/Player Shooting.csv"):
 def load_league_averages(file_path="../data/League Average Shooting.csv"):
     return pd.read_csv(file_path).set_index("Season")
 
+@st.cache_data
+def load_basic_stats():
+    per_game = pd.read_csv("../data/Player Per Game.csv")
+    per_100 = pd.read_csv("../data/Per 100 Poss.csv")
+    totals = pd.read_csv("../data/Player Totals.csv")
+    return per_game, per_100, totals
+
+@st.cache_data
+def load_award_data():
+    all_star = pd.read_csv("../data/All-Star Selections.csv")
+    eos_teams = pd.read_csv("../data/End of Season Teams.csv")
+    award_shares = pd.read_csv("../data/Player Award Shares.csv")
+    career_info = pd.read_csv("../data/Player Career Info.csv")
+    return all_star, eos_teams, award_shares, career_info
+
 def get_player_shot_profile(df, player_name, season, league_avg_df):
     df_player = df[(df["player"] == player_name) & (df["season"] == season)]
     if df_player.empty:
@@ -192,3 +209,118 @@ def plot_shot_chart(shot_zones, player_name, season):
     ax.set_xlim(0, max(fga_pct) + 10)
     plt.tight_layout()
     return fig
+
+def display_awards_and_honors(selected_player, selected_season, all_star_df, eos_teams_df, award_shares_df, career_info_df):
+    def ordinal(n):
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
+    is_all_star = not all_star_df[
+        (all_star_df["player"] == selected_player) &
+        (all_star_df["season"] == selected_season)
+    ].empty
+
+    season_honors = eos_teams_df[
+        (eos_teams_df["player"] == selected_player) &
+        (eos_teams_df["season"] == selected_season)
+    ]
+
+    season_awards = award_shares_df[
+        (award_shares_df["player"] == selected_player) &
+        (award_shares_df["season"] == selected_season)
+    ]
+
+    hof_status = career_info_df[
+        (career_info_df["player"].str.lower() == selected_player.lower())
+    ]
+    is_hof = not hof_status.empty and hof_status.iloc[0]["hof"] == True
+
+    st.markdown("### 🏅 Awards & Honors")
+
+    if is_all_star:
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(90deg, gold, goldenrod);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: black;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        ">
+            All-Star Selection ⭐
+        </div>
+        """, unsafe_allow_html=True)
+        
+    for _, row in season_honors.iterrows():
+        honor_text = f"{row['type']} {row['number_tm']} Team"
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(90deg, gold, goldenrod);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: black;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        ">
+        {honor_text}
+        </div>
+        """, unsafe_allow_html=True)
+
+    for _, row in season_awards.iterrows():
+        award_name = row['award'].upper()
+        award_season_df = award_shares_df[
+            (award_shares_df["season"] == row["season"]) & 
+            (award_shares_df["award"] == row["award"])
+        ].sort_values(by="pts_won", ascending=False).reset_index(drop=True)
+
+        player_rank = (
+            award_season_df[award_season_df["player"] == selected_player].index[0] + 1
+            if selected_player in award_season_df["player"].values else None
+        )
+
+        if row['winner'] == "TRUE":
+            banner = f"{award_name} Winner 🏆"
+        else:
+            banner = f"{award_name}: {ordinal(player_rank)} Place ({round(row['share'] * 100, 1)}% Vote Share)"
+            st.markdown(f"""
+                <div style="
+                background: linear-gradient(90deg, gold, goldenrod);
+                padding: 10px;
+                border-radius: 10px;
+                text-align: center;
+                font-weight: bold;
+                color: black;
+                margin-top: 10px;
+                margin-bottom: 10px;
+                font-size: 16px;
+                ">
+                {banner}
+                </div>
+                """, unsafe_allow_html=True)
+
+    if is_hof:
+        st.markdown(f"""
+        <div style="
+        background: linear-gradient(90deg, #ffd700, #ffcc00);
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: black;
+        margin-bottom: 15px;
+        font-size: 18px;
+        border: 2px solid #b8860b;
+        box-shadow: 0px 0px 10px rgba(218,165,32,0.6);
+        ">
+        🏛️ Hall of Fame Inductee
+        </div>
+        """, unsafe_allow_html=True)
